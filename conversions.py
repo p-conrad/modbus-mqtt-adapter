@@ -7,7 +7,6 @@ import struct
 from typing import List, Dict, Union, NamedTuple, Callable
 
 ConversionResult = Dict[str, Union[float, List[float]]]
-SensorList = List[Dict[str, Union[str, List[Dict[str, float]]]]]
 
 
 def convert_timestamp(responseData: List[int]) -> int:
@@ -41,7 +40,14 @@ def convert_real(responseData: List[int]) -> float:
     return struct.unpack(">f", bytes.fromhex(hexStr))[0]
 
 
-class StructEntry(NamedTuple):
+def convert_word(responseData: List[int]) -> int:
+    """
+    Takes a single word from the Modbus response and returns it as-is.
+    """
+    return responseData[0]
+
+
+class DataEntry(NamedTuple):
     """
     A structure describing one entry in the memory layout of the Modbus response:
     How it is called, at which position it resides in the array, how many words
@@ -56,24 +62,24 @@ class StructEntry(NamedTuple):
     converter: Callable[[List[int]], float]
 
 
-STRUCT_SIZE: int = 24
-STRUCT_CONTENTS: List[StructEntry] = [
-    StructEntry("timestamp", 0, 2, 1, convert_timestamp),
-    StructEntry("busIndex", 2, 1, 1, lambda x: x[0]),
-    StructEntry("voltage", 4, 2, 3, convert_real),
-    StructEntry("current", 10, 2, 3, convert_real),
-    StructEntry("power", 16, 2, 3, convert_real),
-    StructEntry("energy", 22, 2, 1, convert_real),
+DATA_SIZE: int = 24
+DATA_DESCRIPTION: List[DataEntry] = [
+    DataEntry("timestamp", 0, 2, 1, convert_timestamp),
+    DataEntry("busIndex", 2, 1, 1, convert_word),
+    DataEntry("voltage", 4, 2, 3, convert_real),
+    DataEntry("current", 10, 2, 3, convert_real),
+    DataEntry("power", 16, 2, 3, convert_real),
+    DataEntry("energy", 22, 2, 1, convert_real),
 ]
 
 
-def convert_single_struct(registers: List[int]) -> ConversionResult:
+def convert_single_module(registers: List[int]) -> ConversionResult:
     """
-    Converts a single structure from the Modbus response into a dictionary according
+    Converts a slice from the Modbus response into a dictionary according
     to the description given by STRUCT_CONTENTS above.
     """
     result = {}
-    for entry in STRUCT_CONTENTS:
+    for entry in DATA_DESCRIPTION:
         if entry.count == 1:
             value = entry.converter(
                 registers[entry.position : entry.position + entry.wordsize]
@@ -90,67 +96,3 @@ def convert_single_struct(registers: List[int]) -> ConversionResult:
             value = list(map(entry.converter, slices))
         result[entry.name] = value
     return result
-
-
-def to_sensor_list(registers: List[int]) -> SensorList:
-    """
-    Takes a single structure from the Modbus response and turns it into a list of
-    sensors as specified by the WDL JSON 0.1.0 specification, using the ConversionResult
-    from convert_single_struct as an intermediary representation.
-    """
-    convResult = convert_single_struct(registers)
-    sensorIds = [
-        f"pm{convResult['busIndex']}-{suffix}"
-        for suffix in ["phase1", "phase2", "phase3", "module"]
-    ]
-    result = [
-        {"sensorId": sid, "energyvalues": [{"timestamp": convResult["timestamp"]}]}
-        for sid in sensorIds
-    ]
-
-    # some assertion which are important for the correctness of the code below
-    assert result[0]["sensorId"] == f"pm{convResult['busIndex']}-phase1"
-    assert result[1]["sensorId"] == f"pm{convResult['busIndex']}-phase2"
-    assert result[2]["sensorId"] == f"pm{convResult['busIndex']}-phase3"
-    assert result[3]["sensorId"] == f"pm{convResult['busIndex']}-module"
-
-    keys = convResult.keys()
-    for key in keys:
-        if key in ("timestamp", "busIndex"):
-            continue
-
-        value = convResult[key]
-        # a rather simplistic approach: if we have one value we assume it is for the
-        # module itself, otherwise they correspond to the 3 phases. The assumption
-        # is that the 3 phases come first, then the module, as defined by the initial
-        # result above
-        if isinstance(value, float):
-            result[3]["energyvalues"][0][key] = value
-        elif isinstance(value, list) and len(value) == 3:
-            for (index, num) in enumerate(value):
-                result[index]["energyvalues"][0][key] = num
-        else:
-            raise TypeError(
-                f"Unsupported data type '{type(value)}' for key '{key}'"
-                + f" in the converted data: {value}"
-            )
-
-    return result
-
-
-def merge_energy_values(target: SensorList, source: SensorList) -> SensorList:
-    """
-    Merges the energy values of one SensorList into another
-    """
-    for sourceEntry in source:
-        targetEntry = next(
-            (s for s in target if s["sensorId"] == sourceEntry["sensorId"]), None
-        )
-        if not targetEntry:
-            target.append(sourceEntry)
-        else:
-            targetEntry["energyvalues"].append(  # type: ignore
-                sourceEntry["energyvalues"][0]   # type: ignore
-            )
-
-    return target

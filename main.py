@@ -12,7 +12,7 @@ import sys
 from pymodbus.client import ModbusTcpClient
 from pymodbus.exceptions import ConnectionException
 from args import get_args
-from conversions import STRUCT_SIZE, merge_energy_values, to_sensor_list
+from conversions import DATA_SIZE, convert_single_module
 from mqtt import create_mqtt_client
 
 
@@ -81,11 +81,9 @@ if __name__ == "__main__":
 
     # preparing the initial empty data set
     dataset = {
-        "wdlmqtt": "0.1.0",
-        "devices": [{"deviceId": args.device, "sensors": []}],
+        "device": args.device,
+        "results": []
     }
-    sensorsEntry = dataset["devices"][0]["sensors"]
-    count = 0
 
     try:
         while True:
@@ -97,14 +95,14 @@ if __name__ == "__main__":
 
             try:
                 response = modbusClient.read_input_registers(
-                    args.baseaddress, STRUCT_SIZE
+                    args.baseaddress, DATA_SIZE * args.modules
                 )
                 if response.isError():
                     # Pymodbus has a strange habit where every second request fails
                     # if the polling interval is too big (roughly equal to or above
                     # 2 seconds). Trying once more should fix it in most cases.
                     response = modbusClient.read_input_registers(
-                        args.baseaddress, STRUCT_SIZE
+                        args.baseaddress, DATA_SIZE * args.modules
                     )
                     if response.isError():
                         # if it didn't help we probably got something more serious
@@ -122,22 +120,19 @@ if __name__ == "__main__":
                 continue
 
             for i in range(0, args.modules):
-                sensorList = to_sensor_list(
-                    response.registers[i * STRUCT_SIZE : (i + 1) * STRUCT_SIZE]
+                moduleSlice = response.registers[i * DATA_SIZE : (i + 1) * DATA_SIZE]
+                dataset["results"].append(
+                    convert_single_module(moduleSlice)
                 )
-                merge_energy_values(sensorsEntry, sensorList)
-            count += 1
 
-            if count == args.accumulate:
-                jsonStr = json.dumps(dataset, separators=(",", ":"))
-                messageInfo = mqttClient.publish(MQTT_TOPIC, jsonStr, qos=2)
-                logging.debug(
-                    "Publish requested for message with ID %s: %s",
-                    messageInfo.mid,
-                    jsonStr,
-                )
-                sensorsEntry.clear()
-                count = 0
+            jsonStr = json.dumps(dataset, separators=(",", ":"))
+            messageInfo = mqttClient.publish(MQTT_TOPIC, jsonStr, qos=2)
+            logging.debug(
+                "Publish requested for message with ID %s: %s",
+                messageInfo.mid,
+                jsonStr,
+            )
+            dataset["results"].clear()
 
             wait_next_cycle(startTime, args.interval)
     except KeyboardInterrupt:

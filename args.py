@@ -81,13 +81,6 @@ def get_args():
         + " (used as ID in the sent dataset and as part of the MQTT client ID)",
     )
     argParser.add_argument(
-        "-a",
-        "--accumulate",
-        type=int,
-        default=10,
-        help="How many results to accumulate before sending them to the broker",
-    )
-    argParser.add_argument(
         "-l",
         "--loglevel",
         type=str,
