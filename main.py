@@ -81,10 +81,7 @@ if __name__ == "__main__":
     mqttClient.loop_start()
 
     # preparing the initial empty data set
-    dataset = {
-        "device": args.device,
-        "results": []
-    }
+    dataset = {"device": args.device, "results": []}
 
     try:
         while True:
@@ -93,7 +90,6 @@ if __name__ == "__main__":
             if not modbusConnected and modbusClient.connect():
                 logging.info("Reconnection to the PLC successful")
                 modbusConnected = True
-
 
             try:
                 for i in range(0, 2):
@@ -107,12 +103,12 @@ if __name__ == "__main__":
                         break
 
                 if response.isError():
-                        logging.warning(
-                            "Modbus response is an error: %s. Skipping this cycle",
-                            response,
-                        )
-                        wait_next_cycle(startTime, args.interval)
-                        continue
+                    logging.warning(
+                        "Modbus response is an error: %s. Skipping this cycle",
+                        response,
+                    )
+                    wait_next_cycle(startTime, args.interval)
+                    continue
             except ConnectionException:
                 if modbusConnected:
                     logging.error("Connection to the PLC lost, trying to reconnect...")

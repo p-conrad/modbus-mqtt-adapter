@@ -7,6 +7,7 @@ import struct
 from typing import Dict, List, Union
 from data_entry import DataEntry
 
+
 def convert_timestamp(responseData: List[int]) -> int:
     """
     Converts two words from the Modbus response to a datetime object.
@@ -45,7 +46,9 @@ def convert_word(responseData: List[int]) -> int:
     return responseData[0]
 
 
-def convert_single_module(registers: List[int], layout: List[DataEntry]) -> Dict[str, Union[int, float, List[float]]]:
+def convert_single_module(
+    registers: List[int], layout: List[DataEntry]
+) -> Dict[str, Union[int, float, List[float]]]:
     """
     Converts a slice from the Modbus response into a dictionary according
     to the given DataDescription instance.

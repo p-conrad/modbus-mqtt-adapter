@@ -5,6 +5,7 @@ used to describe a single entry the Modbus response layout.
 
 from typing import List, Dict, Union, NamedTuple, Callable
 
+
 class DataEntry(NamedTuple):
     """
     A structure describing one entry in the memory layout of the Modbus response:
