@@ -94,19 +94,19 @@ if __name__ == "__main__":
                 logging.info("Reconnection to the PLC successful")
                 modbusConnected = True
 
+
             try:
-                response = modbusClient.read_input_registers(
-                    args.baseaddress, DATA_SIZE * args.modules
-                )
-                if response.isError():
+                for i in range(0, 2):
                     # Pymodbus has a strange habit where every second request fails
                     # if the polling interval is too big (roughly equal to or above
                     # 2 seconds). Trying once more should fix it in most cases.
                     response = modbusClient.read_input_registers(
                         args.baseaddress, DATA_SIZE * args.modules
                     )
-                    if response.isError():
-                        # if it didn't help we probably got something more serious
+                    if not response.isError():
+                        break
+
+                if response.isError():
                         logging.warning(
                             "Modbus response is an error: %s. Skipping this cycle",
                             response,
