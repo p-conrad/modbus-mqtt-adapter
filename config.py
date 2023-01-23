@@ -5,10 +5,11 @@ the data size of it is.
 """
 
 from conversions import convert_timestamp, convert_real, convert_word
-from datatypes import DataEntry, DataDescription
+from data_entry import DataEntry
+from typing import List
 
 DATA_SIZE: int = 24
-DATA_LAYOUT: DataDescription = [
+DATA_LAYOUT: List[DataEntry] = [
     DataEntry("timestamp", 0, 2, 1, convert_timestamp),
     DataEntry("busIndex", 2, 1, 1, convert_word),
     DataEntry("voltage", 4, 2, 3, convert_real),

@@ -1,6 +1,6 @@
 """
-This module contains some type information, particularly for the configuration
-objects and the conversion function.
+This module contains information for the data entry type
+used to describe a single entry the Modbus response layout.
 """
 
 from typing import List, Dict, Union, NamedTuple, Callable
@@ -18,6 +18,3 @@ class DataEntry(NamedTuple):
     wordsize: int
     count: int
     converter: Callable[[List[int]], float]
-
-DataDescription = List[DataEntry]
-ConversionResult = Dict[str, Union[int, float, List[float]]]

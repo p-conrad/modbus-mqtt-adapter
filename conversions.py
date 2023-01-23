@@ -4,8 +4,8 @@ the Modbus device and restructure it in a usable format.
 """
 
 import struct
-from typing import List
-from datatypes import DataDescription, ConversionResult
+from typing import Dict, List, Union
+from data_entry import DataEntry
 
 def convert_timestamp(responseData: List[int]) -> int:
     """
@@ -45,7 +45,7 @@ def convert_word(responseData: List[int]) -> int:
     return responseData[0]
 
 
-def convert_single_module(registers: List[int], layout: DataDescription) -> ConversionResult:
+def convert_single_module(registers: List[int], layout: List[DataEntry]) -> Dict[str, Union[int, float, List[float]]]:
     """
     Converts a slice from the Modbus response into a dictionary according
     to the given DataDescription instance.
