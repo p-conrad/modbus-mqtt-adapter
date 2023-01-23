@@ -12,7 +12,8 @@ import sys
 from pymodbus.client import ModbusTcpClient
 from pymodbus.exceptions import ConnectionException
 from args import get_args
-from conversions import DATA_SIZE, convert_single_module
+from config import DATA_LAYOUT, DATA_SIZE
+from conversions import convert_single_module
 from mqtt import create_mqtt_client
 
 
@@ -122,7 +123,7 @@ if __name__ == "__main__":
             for i in range(0, args.modules):
                 moduleSlice = response.registers[i * DATA_SIZE : (i + 1) * DATA_SIZE]
                 dataset["results"].append(
-                    convert_single_module(moduleSlice)
+                    convert_single_module(moduleSlice, DATA_LAYOUT)
                 )
 
             jsonStr = json.dumps(dataset, separators=(",", ":"))

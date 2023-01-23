@@ -4,10 +4,8 @@ the Modbus device and restructure it in a usable format.
 """
 
 import struct
-from typing import List, Dict, Union, NamedTuple, Callable
-
-ConversionResult = Dict[str, Union[float, List[float]]]
-
+from typing import List
+from datatypes import DataDescription, ConversionResult
 
 def convert_timestamp(responseData: List[int]) -> int:
     """
@@ -47,39 +45,13 @@ def convert_word(responseData: List[int]) -> int:
     return responseData[0]
 
 
-class DataEntry(NamedTuple):
-    """
-    A structure describing one entry in the memory layout of the Modbus response:
-    How it is called, at which position it resides in the array, how many words
-    a single value consists of, how many values there are, and a function doing
-    the appropriate conversion.
-    """
-
-    name: str
-    position: int
-    wordsize: int
-    count: int
-    converter: Callable[[List[int]], float]
-
-
-DATA_SIZE: int = 24
-DATA_DESCRIPTION: List[DataEntry] = [
-    DataEntry("timestamp", 0, 2, 1, convert_timestamp),
-    DataEntry("busIndex", 2, 1, 1, convert_word),
-    DataEntry("voltage", 4, 2, 3, convert_real),
-    DataEntry("current", 10, 2, 3, convert_real),
-    DataEntry("power", 16, 2, 3, convert_real),
-    DataEntry("energy", 22, 2, 1, convert_real),
-]
-
-
-def convert_single_module(registers: List[int]) -> ConversionResult:
+def convert_single_module(registers: List[int], layout: DataDescription) -> ConversionResult:
     """
     Converts a slice from the Modbus response into a dictionary according
-    to the description given by STRUCT_CONTENTS above.
+    to the given DataDescription instance.
     """
     result = {}
-    for entry in DATA_DESCRIPTION:
+    for entry in layout:
         if entry.count == 1:
             value = entry.converter(
                 registers[entry.position : entry.position + entry.wordsize]
