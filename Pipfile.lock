@@ -25,11 +25,11 @@
         },
         "pymodbus": {
             "hashes": [
-                "sha256:e216eb26ebeb48e2cac4fd487197c339f7f8d9becf7cc6b8aa8ad1e3e5f0275c",
-                "sha256:eeba02c86b13b1f885c0acc50adf4611df24ab85066ff54daa37c2d883c32525"
+                "sha256:9da992dc23f7a5817e91dcb8e6962b3cb3645a438ee98f9ae99b4a7b7746a746",
+                "sha256:ac7aa7414df3d410b97595c4248d358ef76d4b2a67d1e102058341a74b888487"
             ],
             "index": "pypi",
-            "version": "==3.1.0"
+            "version": "==3.1.1"
         }
     },
     "develop": {
