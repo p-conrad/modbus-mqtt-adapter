@@ -52,8 +52,8 @@ if __name__ == "__main__":
     )
 
     print("=== Modbus MQTT Adapter ===")
-    print(f"Data Source  : {args.source}")
-    print(f"MQTT Broker  : {args.target}:{args.port}")
+    print(f"Data Source  : {args.source}:{args.sourceport}")
+    print(f"MQTT Broker  : {args.target}:{args.targetport}")
     print(f"MQTT Topic   : {MQTT_TOPIC}")
     print(f"# of Modules : {args.modules}")
     print(f"Base Address : {args.baseaddress}")
@@ -63,7 +63,7 @@ if __name__ == "__main__":
     logging.info("Interface started with arguments: %s", args)
 
     # Modbus/TCP connection setup
-    modbusClient = ModbusTcpClient(args.source)
+    modbusClient = ModbusTcpClient(args.source, args.sourceport)
     if not modbusClient.connect():
         logging.error("Connection to the PLC failed.")
         sys.exit(1)
@@ -77,7 +77,7 @@ if __name__ == "__main__":
         args.password = getpass("MQTT Password: ")
 
     mqttClient = create_mqtt_client(args)
-    mqttClient.connect_async(args.target, args.port)
+    mqttClient.connect_async(args.target, args.targetport)
     mqttClient.loop_start()
 
     # preparing the initial empty data set

@@ -18,30 +18,47 @@ def get_args():
     argParser.add_argument(
         "-s",
         "--source",
+        metavar="ADDRESS",
         type=str,
-        default="127.0.0.1",
-        help="The address of the PLC to connect to",
+        default="localhost",
+        help="The address of the PLC to connect to (default: localhost)",
+    )
+    argParser.add_argument(
+        "-sp",
+        "--sourceport",
+        metavar="NUMBER",
+        type=int,
+        default=502,
+        help="The port under which to connect to the PLC (default: 502)",
     )
     argParser.add_argument(
         "-t",
         "--target",
+        metavar="ADDRESS",
         type=str,
-        default="127.0.0.1",
-        help="The address of the target MQTT broker",
+        default="localhost",
+        help="The address of the target MQTT broker (default: localhost)",
     )
     argParser.add_argument(
-        "-p", "--port", type=int, default=1883, help="The port of the MQTT broker"
+        "-tp",
+        "--targetport",
+        metavar="NUMBER",
+        type=int,
+        default=1883,
+        help="The port under which to connect to the MQTT broker (default: 1883)",
     )
     argParser.add_argument(
         "-U",
         "--username",
+        metavar="USER",
         type=str,
         default="",
-        help="Username for the MQTT broker",
+        help="Username for the MQTT broker (default: none)",
     )
     argParser.add_argument(
         "-P",
         "--password",
+        metavar="PASSWORD",
         type=str,
         default="",
         help="Password for the MQTT broker"
@@ -50,35 +67,36 @@ def get_args():
     argParser.add_argument(
         "-n",
         "--modules",
-        metavar="NUM",
+        metavar="NUMBER",
         type=int,
         default=1,
-        help="The number of modules to read from on the bus",
+        help="The number of modules to read from on the bus (default: 1)",
     )
     argParser.add_argument(
         "-b",
         "--baseaddress",
-        metavar="NUM",
+        metavar="NUMBER",
         type=int,
         default=0,
-        help="The starting address of the PLC registers where the data is stored",
+        help="The starting address of the PLC input registers where the data is stored (default: 0)",
     )
     argParser.add_argument(
         "-i",
         "--interval",
-        metavar="NUM",
+        metavar="NUMBER",
         type=float,
         default=5,
         help="The interval to poll data from the PLC, in seconds"
-        + " (can be a decimal number)",
+        + " (can be a decimal number, default: 5)",
     )
     argParser.add_argument(
         "-d",
         "--device",
+        metavar="NAME",
         type=str,
         default="plc",
         help="The name of the PLC device where the data is read from"
-        + " (used as ID in the sent dataset and as part of the MQTT client ID)",
+        + " (used as ID in the sent dataset and as part of the MQTT client ID, default: plc)",
     )
     argParser.add_argument(
         "-l",
@@ -87,6 +105,6 @@ def get_args():
         choices=["debug", "info", "warn", "warning", "error", "critical"],
         default="info",
         help="The logging level."
-        + " Logging output at or above this level will be written to the log file",
+        + " Logging output at or above this level will be written to the log file (default: info)",
     )
     return argParser.parse_args()
