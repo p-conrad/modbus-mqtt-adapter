@@ -81,7 +81,7 @@ if __name__ == "__main__":
     mqttClient.loop_start()
 
     # preparing the initial empty data set
-    dataset = {"device": args.device, "results": []}
+    dataset = {"device": args.device, "timestamp": 0, "results": []}
 
     try:
         while True:
@@ -96,9 +96,11 @@ if __name__ == "__main__":
                     # Pymodbus has a strange habit where every second request fails
                     # if the polling interval is too big (roughly equal to or above
                     # 2 seconds). Trying once more should fix it in most cases.
+                    timeA = time()
                     response = modbusClient.read_input_registers(
                         args.baseaddress, DATA_SIZE * args.modules
                     )
+                    timeB = time()
                     if not response.isError():
                         break
 
@@ -116,11 +118,14 @@ if __name__ == "__main__":
                 wait_next_cycle(startTime, args.interval)
                 continue
 
+            # we approximate a correct timestamp by taking the time before/after
+            # each request and calculating the middle value
+            dataset["timestamp"] = int((timeA + timeB) / 2)
             for i in range(0, args.modules):
                 moduleSlice = response.registers[i * DATA_SIZE : (i + 1) * DATA_SIZE]
-                dataset["results"].append(
-                    convert_single_module(moduleSlice, DATA_LAYOUT)
-                )
+                result = convert_single_module(moduleSlice, DATA_LAYOUT)
+                result["index"] = i
+                dataset["results"].append(result)
 
             jsonStr = json.dumps(dataset, separators=(",", ":"))
             messageInfo = mqttClient.publish(MQTT_TOPIC, jsonStr, qos=2)
