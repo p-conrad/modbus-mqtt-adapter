@@ -4,8 +4,8 @@ verify_ssl = true
 name = "pypi"
 
 [packages]
-pymodbus = "*"
 paho-mqtt = "*"
+pymodbustcp = "*"
 
 [dev-packages]
 black = "*"
