@@ -11,7 +11,7 @@ import os
 import sys
 from pyModbusTCP.client import ModbusClient
 from args import get_args
-from config import DATA_LAYOUT, DATA_SIZE
+from config import DATA_LAYOUT, DATA_SIZE, DATA_IS_BIG_ENDIAN
 from conversions import convert_single_module
 from mqtt import create_mqtt_client
 
@@ -115,7 +115,9 @@ if __name__ == "__main__":
             dataset["timestamp"] = int((timeA + timeB) / 2)
             for i in range(0, args.modules):
                 moduleSlice = response[i * DATA_SIZE : (i + 1) * DATA_SIZE]
-                result = convert_single_module(moduleSlice, DATA_LAYOUT)
+                result = convert_single_module(
+                    moduleSlice, DATA_LAYOUT, DATA_IS_BIG_ENDIAN
+                )
                 result["index"] = i
                 dataset["results"].append(result)
 
