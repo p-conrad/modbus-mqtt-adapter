@@ -7,7 +7,7 @@ the data size of it is.
 from data_types import PlcDataType, DataEntry
 from typing import List
 
-DATA_IS_BIG_ENDIAN = False
+DATA_IS_BIG_ENDIAN: bool = False
 DATA_SIZE: int = 20
 DATA_LAYOUT: List[DataEntry] = [
     DataEntry("voltage", 0, 2, 3, PlcDataType.Float32),
