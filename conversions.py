@@ -13,7 +13,8 @@ def convert_value(
 ) -> Union[int, float]:
     """
     Converts a single value from the Modbus response according to the type
-    definition and the given endianness.
+    definition and the given endianness. Rounds floating-point numbers
+    to three fractional digits.
     """
     if type == PlcDataType.Int16:
         return responseData[0]
@@ -26,9 +27,9 @@ def convert_value(
     elif type == PlcDataType.UInt32:
         return utils.get_2comp(longVal, val_size=32)
     elif type == PlcDataType.Float32:
-        return utils.decode_ieee(longVal)
+        return round(utils.decode_ieee(longVal), 3)
     elif type == PlcDataType.Float64:
-        return utils.decode_ieee(longVal, double=True)
+        return round(utils.decode_ieee(longVal, double=True), 3)
 
 
 def convert_single_module(
