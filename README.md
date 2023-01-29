@@ -156,3 +156,8 @@ First of all, program your PLC to share your desired data points over Modbus and
 configuration file (`config.py`) to reflect your setup. You may then run the script from the
 command line with `./main.py [PARAMETERS]`. Use `./main.py --help` to get an overview of the
 available settings.
+
+
+# License
+
+Contents of this repository are licensed under the [MIT license](LICENSE).
