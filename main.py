@@ -62,7 +62,9 @@ if __name__ == "__main__":
     logging.info("Interface started with arguments: %s", args)
 
     # Modbus/TCP connection setup
-    modbusClient = ModbusClient(host=args.source, port=args.sourceport)
+    modbusClient = ModbusClient(
+        host=args.source, port=args.sourceport, timeout=min(30, args.interval * 0.8)
+    )
     modbusConnected = modbusClient.open()
     if not modbusConnected:
         logging.error("Connection to the PLC failed.")
