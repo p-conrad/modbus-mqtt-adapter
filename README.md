@@ -70,7 +70,7 @@ The register values will be transformed into this kind of object:
   [Eclipse Paho Python library](https://github.com/eclipse/paho.mqtt.python). Sending of messages
   happens independently from the main cycle, thus not affecting the run time even in case of a bad
   connection.
-* All relevant settings can be set with command-line arguments
+* Most of the important parameters can be set with command-line arguments
   (using Python's [argparse](https://docs.python.org/3/library/argparse.html) library).
 * Uses Pythons [logging framework](https://docs.python.org/3/library/logging.html) with
   a configurable log level. Messages are printed to the console and also saved to a log file. Log
