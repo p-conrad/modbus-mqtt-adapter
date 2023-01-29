@@ -1,7 +1,7 @@
 {
     "_meta": {
         "hash": {
-            "sha256": "bfc71ea33df2a008a9490421a5297e1f6a566f2f4519a537ec105d5d5890e731"
+            "sha256": "ef6960a5b963ad1ada906f6339e19eac2b85b635032ead7a2556d44c65e2d306"
         },
         "pipfile-spec": 6,
         "requires": {
@@ -23,13 +23,12 @@
             "index": "pypi",
             "version": "==1.6.1"
         },
-        "pymodbus": {
+        "pymodbustcp": {
             "hashes": [
-                "sha256:9da992dc23f7a5817e91dcb8e6962b3cb3645a438ee98f9ae99b4a7b7746a746",
-                "sha256:ac7aa7414df3d410b97595c4248d358ef76d4b2a67d1e102058341a74b888487"
+                "sha256:2eacea4f75e8899cf6bbbc74b933d531c1ffee071a1072ac29a7e470af3812fa"
             ],
             "index": "pypi",
-            "version": "==3.1.1"
+            "version": "==0.2.0"
         }
     },
     "develop": {
@@ -68,11 +67,11 @@
         },
         "pathspec": {
             "hashes": [
-                "sha256:3c95343af8b756205e2aba76e843ba9520a24dd84f68c22b9f93251507509dd6",
-                "sha256:56200de4077d9d0791465aa9095a01d421861e405b5096955051deefd697d6f6"
+                "sha256:3a66eb970cbac598f9e5ccb5b2cf58930cd8e3ed86d393d541eaf2d8b1705229",
+                "sha256:64d338d4e0914e91c1792321e6907b5a593f1ab1851de7fc269557a21b30ebbc"
             ],
             "markers": "python_version >= '3.7'",
-            "version": "==0.10.3"
+            "version": "==0.11.0"
         },
         "platformdirs": {
             "hashes": [

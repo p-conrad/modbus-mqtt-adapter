@@ -9,10 +9,9 @@ import logging
 import logging.handlers
 import os
 import sys
-from pymodbus.client import ModbusTcpClient
-from pymodbus.exceptions import ConnectionException
+from pyModbusTCP.client import ModbusClient
 from args import get_args
-from config import DATA_LAYOUT, DATA_SIZE
+from config import DATA_LAYOUT, DATA_SIZE, DATA_IS_BIG_ENDIAN
 from conversions import convert_single_module
 from mqtt import create_mqtt_client
 
@@ -63,14 +62,12 @@ if __name__ == "__main__":
     logging.info("Interface started with arguments: %s", args)
 
     # Modbus/TCP connection setup
-    modbusClient = ModbusTcpClient(args.source, args.sourceport)
-    if not modbusClient.connect():
+    modbusClient = ModbusClient(host=args.source, port=args.sourceport)
+    modbusConnected = modbusClient.open()
+    if not modbusConnected:
         logging.error("Connection to the PLC failed.")
-        sys.exit(1)
-    logging.info("Modbus connection to %s successful", args.source)
-
-    # this helps with tracking the PLC connection state
-    modbusConnected = True
+    else:
+        logging.info("Modbus connection to %s successful", args.source)
 
     # MQTT connection setup
     if args.username and not args.password:
@@ -87,33 +84,28 @@ if __name__ == "__main__":
         while True:
             startTime = time()
 
-            if not modbusConnected and modbusClient.connect():
-                logging.info("Reconnection to the PLC successful")
-                modbusConnected = True
-
-            try:
-                for i in range(0, 2):
-                    # Pymodbus has a strange habit where every second request fails
-                    # if the polling interval is too big (roughly equal to or above
-                    # 2 seconds). Trying once more should fix it in most cases.
-                    timeA = time()
-                    response = modbusClient.read_input_registers(
-                        args.baseaddress, DATA_SIZE * args.modules
-                    )
-                    timeB = time()
-                    if not response.isError():
-                        break
-
-                if response.isError():
-                    logging.warning(
-                        "Modbus response is an error: %s. Skipping this cycle",
-                        response,
-                    )
+            if not modbusConnected:
+                if modbusClient.open():
+                    logging.info("Reconnection to the PLC successful")
+                    modbusConnected = True
+                else:
                     wait_next_cycle(startTime, args.interval)
                     continue
-            except ConnectionException:
-                if modbusConnected:
-                    logging.error("Connection to the PLC lost, trying to reconnect...")
+
+            timeA = time()
+            response = modbusClient.read_input_registers(
+                args.baseaddress, DATA_SIZE * args.modules
+            )
+            timeB = time()
+
+            if not response:
+                logging.warning(
+                    "Failed to read Modbus data, error code %s (%s)",
+                    modbusClient.last_error,
+                    modbusClient.last_error_as_txt,
+                )
+                if not modbusClient.is_open:
+                    logging.error("Connection to the PLC lost.")
                     modbusConnected = False
                 wait_next_cycle(startTime, args.interval)
                 continue
@@ -122,8 +114,10 @@ if __name__ == "__main__":
             # each request and calculating the middle value
             dataset["timestamp"] = int((timeA + timeB) / 2)
             for i in range(0, args.modules):
-                moduleSlice = response.registers[i * DATA_SIZE : (i + 1) * DATA_SIZE]
-                result = convert_single_module(moduleSlice, DATA_LAYOUT)
+                moduleSlice = response[i * DATA_SIZE : (i + 1) * DATA_SIZE]
+                result = convert_single_module(
+                    moduleSlice, DATA_LAYOUT, DATA_IS_BIG_ENDIAN
+                )
                 result["index"] = i
                 dataset["results"].append(result)
 
