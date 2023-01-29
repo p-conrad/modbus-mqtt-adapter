@@ -124,7 +124,7 @@ if __name__ == "__main__":
                 dataset["results"].append(result)
 
             jsonStr = json.dumps(dataset, separators=(",", ":"))
-            messageInfo = mqttClient.publish(MQTT_TOPIC, jsonStr, qos=2)
+            messageInfo = mqttClient.publish(MQTT_TOPIC, jsonStr, qos=0)
             logging.debug(
                 "Publish requested for message with ID %s: %s",
                 messageInfo.mid,
