@@ -10,6 +10,7 @@ from typing import List
 DATA_IS_BIG_ENDIAN: bool = False
 DATA_SIZE: int = 20
 DATA_LAYOUT: List[DataEntry] = [
+    # name, base address, register size, count, type
     DataEntry("voltage", 0, 2, 3, PlcDataType.Float32),
     DataEntry("current", 6, 2, 3, PlcDataType.Float32),
     DataEntry("power", 12, 2, 3, PlcDataType.Float32),

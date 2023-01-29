@@ -1,0 +1,14 @@
+[Unit]
+Description=Modbus->MQTT Adapter
+After=multi-user.target
+Conflicts=getty@tty1.service
+
+[Service]
+Type=simple
+WorkingDirectory=/home/user/modbus-mqtt-adapter
+ExecStart=/usr/bin/pipenv run ./main.py --loglevel info
+StandardInput=tty-force
+User=user
+
+[Install]
+WantedBy=multi-user.target
